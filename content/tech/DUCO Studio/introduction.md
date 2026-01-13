@@ -25,6 +25,127 @@ Yes! Nuxt UI is used in production by thousands of applications with extensive t
 
 ::
 
+
+::mermaid
+
+flowchart TB
+subgraph Machine\["ZippleBack"]
+  subgraph M1\[DUCO app]
+    subgraph CAN\["vehicle_can"]
+      LIVEDATA\[LiveData 
+      Second Level]
+      Regular\[Regular
+      minute Level]
+      TOACAN\[TOA
+      millisecond Level]
+    end
+    subgraph ClientRawData\["Client Raw Data"]
+      Metrics\[Runtime Metrics 
+      Second Level]
+      TOAMetrics\[TOA]
+    end
+    subgraph DTC\["vehicle_dtc"]
+      Listener\[Real-time DTC]
+      keyon\[Key On DTC]
+      TOADTC\[TOA]
+    end
+    subgraph Position\["vehicle_position"]
+      RLPosition\[Real-times
+      second Level]
+      RegularPosition\[Regular
+      sampled per two meters]
+      TOAPosition\[TOA]
+    end
+    subgraph Event\["vehicle_log"]
+      RegularLog\[Regular
+      Key On]
+      TOALog\[TOA]
+    end
+    subgraph Event\["vehicle_event"]
+      ListenerEvent\[Real-time]
+      TOAEvent\[TOA]
+    end
+  end
+end
+subgraph IOTHUB\["IOTHUB"]
+  IOT\[Azure IoT Hub]
+end
+M1 -->|Raw Data| IOT
+::
+
+
+
+::mermaid
+
+%%{init: {
+  "themeVariables": {
+    "fontSize": "32px",          
+    "nodeTextColor": "#000000",  
+    "nodePadding": "20px",
+    "lineHeight": "22px"              
+  },
+  "flowchart": {
+    "rankSpacing": 150,
+    "nodeSpacing": 120,
+    "htmlLabels": true           
+  }
+}}%%
+flowchart TB
+subgraph Machine\["Machine Side"]
+  M1\[Machine Sensors]
+  M2\[DUCO App]
+  M1 -->|Raw Data per second| M2
+end
+subgraph Cloud\["Cloud Ingestion"]
+  IOT\[Azure IoT Hub]
+  ING\[Ingestor Server]
+  META\[MetaAPI Parsing Logic]
+  CH\[(ClickHouse)]
+  KAFKA\[(Kafka)]
+  REDIS\[(Redis Pub/Sub)]
+M2 -->|No Command > 3 min 
+Stop Stream| M2
+M2 -->|vehicle_can / client_raw_data| IOT
+IOT -->|Raw Data| ING
+ING --> META
+META -->|Parsed Data| CH
+META -->|Parsed Data| KAFKA
+META -->|Parsed Data -> Pub| REDIS
+end
+subgraph Metaapi\["Metaapi Server"]
+  METAAPI\[API Server]
+METAAPI -->|Get Parsed Data Logic| META
+end
+subgraph Frontend\["DUCO Studio Frontend"]
+  PAGE\["Live Data Page
+UI Mounted"]
+  ECHARTS\[ECharts Line Charts]
+end
+subgraph Studio\["DUCO Studio Server"]
+  API\[API Proxy]
+  WS\[WebSocket Service]
+  REDIS_Job\[(Redis
+  1 min TTL)]
+  CRON\[Cron Job
+  Every 1 min]
+end
+API -->|Store Access| REDIS_Job
+REDIS_Job -->|Check Active Requests| CRON
+CRON -->|Invoke MetaAPI if Active| METAAPI
+REDIS -->|Sub live-stream/*| WS
+PAGE -->|Heartbeat 1 min| API
+API -->|Forward First Request| METAAPI
+METAAPI -->|Invoke Direct Method| IOT
+IOT -->|Command| M2
+M2 -->|Execution Result| IOT
+IOT -->|Result / Ack| METAAPI
+API -->|Initial Echarts data| ECHARTS
+CH -->|Get 2 min data| API
+WS -->|Filtered Live Data| ECHARTS
+ECHARTS -->|Render Charts| PAGE
+PAGE -->|Create WebSocket and Send INIT_FIELD_LIST| WS
+
+::
 ## Heading
 
 ### Heading1

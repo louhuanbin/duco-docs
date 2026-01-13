@@ -240,24 +240,46 @@ If no data is received within 10 seconds, the connection is considered disconnec
 
 flowchart TB
 subgraph Machine\["Machine Side"]
-  M1\[Machine Sensors]
+  M1\[Machine]
   M2\[DUCO App]
-  M1 -->|Raw Data per second| M2
+  M1 -->|Collect Raw Data| M2
 end
-subgraph Cloud\["Cloud Ingestion"]
+subgraph IOTHub\["Azure IoT Hub"]
   IOT\[Azure IoT Hub]
-  ING\[Ingestor Server]
-  META\[MetaAPI Parsing Logic]
-  CH\[(ClickHouse)]
-  KAFKA\[(Kafka)]
-  REDIS\[(Redis Pub/Sub)]
-M2 -->|vehicle_can / client_raw_data| IOT
-IOT -->|Raw Data| ING
-ING --> META
-META -->|Parsed Data| CH
-META -->|Parsed Data| KAFKA
-META -->|Parsed Data -> Pub| REDIS
 end
+subgraph ingestion\["Ingestion server"]
+  ING\[Get Raw Data From IOT Hub]
+  RL\[Real-time Raw Data]
+  META\[Validate & Parse Raw Data]
+  RawData\[Get All Raw Data from KAFKA]
+end
+subgraph REDISLayer\["Redis"]
+  REDIS\[(Redis
+  pub/sub)]
+end
+subgraph KafkaLayer\["Kafka"]
+  RawKafka\[(Topic1)]
+  KAFKA\[(Other Topics)]
+end
+subgraph CH\["ClickHouse"]
+  CHRaw\[(raw_data_cache_store)]
+  CHCe\[(ce_technology)]
+end
+subgraph Distributor\["Distributor layer"]
+  ParsedData\[Get Parsed Data]
+end
+META -->|Store Raw Data| CHRaw
+ING -->|Pub All Raw Data | RawKafka
+RawKafka -->|Sub All Raw Data | RawData
+RawData --> META
+M2 -->|Pub Raw Data| IOT
+IOT -->|Sub Raw Data| ING
+ING -->|Get Real-time Data| RL
+RL --> META
+ParsedData -->|Store All Parsed Data| CHCe
+META -->|Parsed Real-time Data -> Pub| REDIS
+META -->|All Parsed Data -> Pub| KAFKA
+KAFKA -->|Sub All Parsed Data| ParsedData
 subgraph Metaapi\["Metaapi Server"]
   METAAPI\[API Server]
 METAAPI -->|Get Parsed Data Logic| META
@@ -273,7 +295,7 @@ UI Mounted"]
   ECHARTS\[ECharts Line Charts]
 end
 API -->|Initial Echarts data| ECHARTS
-CH -->|Get 2 min data| API
+CHCe -->|Get 2 min data| API
 WS -->|Filtered Live Data| ECHARTS
 ECHARTS -->|Render Charts| PAGE
 PAGE -->|Create WebSocket and Send INIT_FIELD_LIST| WS
@@ -351,11 +373,11 @@ subgraph Frontend\["DUCO Studio Frontend"]
 end
 subgraph Studio\["DUCO Studio Server"]
   API\[API Proxy]
-  REDIS\[(Redis
-  1 min TTL)]
   CRON\[Cron Job
   Every 1 min]
 end
+REDIS\[(Redis
+      1 min TTL)]
 API -->|Forward First Request| META
 META -->|Invoke Direct Method| IOT
 IOT -->|Command| APP
@@ -372,78 +394,111 @@ Stop Stream| APP
 
 ---
 
-## 5. Complete Live Data Architecture Diagram (Logical View)
+## 5. Complete data flow Architecture Diagram (Logical View)
+
 ::mermaid
 
 %%{init: {
   "themeVariables": {
-    "fontSize": "32px",          
+    "fontSize": "48px",          
     "nodeTextColor": "#000000",  
     "nodePadding": "20px",
     "lineHeight": "22px"              
   },
   "flowchart": {
-    "rankSpacing": 150,
+    "rankSpacing": 260,
     "nodeSpacing": 120,
     "htmlLabels": true           
   }
 }}%%
 flowchart TB
 subgraph Machine\["Machine Side"]
-  M1\[Machine Sensors]
+  M1\[Machine]
   M2\[DUCO App]
-  M1 -->|Raw Data per second| M2
+  M1 -->|Collect Raw Data| M2
 end
-subgraph Cloud\["Cloud Ingestion"]
+subgraph IOTHub\["Azure IoT Hub"]
   IOT\[Azure IoT Hub]
-  ING\[Ingestor Server]
-  META\[MetaAPI Parsing Logic]
-  CH\[(ClickHouse)]
-  KAFKA\[(Kafka)]
-  REDIS\[(Redis Pub/Sub)]
-M2 -->|No Command > 3 min 
-Stop Stream| M2
-M2 -->|vehicle_can / client_raw_data| IOT
-IOT -->|Raw Data| ING
-ING --> META
-META -->|Parsed Data| CH
-META -->|Parsed Data| KAFKA
-META -->|Parsed Data -> Pub| REDIS
 end
+subgraph ingestion\["Ingestion server"]
+  ING\[Get Raw Data From IOT Hub]
+  Process\[Get All Raw Data]
+  RL\[Real-time Raw Data]
+  META\[Validate & Parse Raw Data]
+end
+subgraph REDISLayer\["Redis"]
+  REDIS\[(Redis
+  pub/sub)]
+  REDISCron\[(Redis Cron Job)]
+end
+subgraph KafkaLayer\["Kafka"]
+  RawKafka\[(Topic1)]
+  KAFKA\[(Other Topics)]
+end
+subgraph Distributor\["Distributor Layer"]
+  ParedData\[Get Parsed Data]
+  aggreCH\[aggregate data to ClickHouse]
+  aggreRedis\[aggregate data to Redis]
+  tile38\[tile38]
+  webhook\[webhook]
+end
+ParedData --> aggreCH
+ParedData --> aggreRedis
+ParedData --> tile38
+ParedData --> webhook
+KAFKA -->|Sub All Parsed Data| ParedData
+subgraph CH\["ClickHouse"]
+  CHRaw\[(raw_data_cache_store)]
+  CHCe\[(ce_technology)]
+end
+RawKafka -->|Sub All Raw Data| Process
+M2 -->|Pub Raw Data| IOT
+IOT -->|Sub Raw Data| ING
+ING -->|Get Real-time Data| RL
+ING -->|Pub All Raw Data| RawKafka
+RL --> META
+Process --> META
+META -->|Store Raw Data| CHRaw
+ParedData -->|Store Parsed Data| CHCe
+META -->|Parsed Data| KAFKA
+META -->|Parsed Real-time Data -> Pub| REDIS
 subgraph Metaapi\["Metaapi Server"]
   METAAPI\[API Server]
 METAAPI -->|Get Parsed Data Logic| META
 end
+subgraph Studio\["DUCO Studio Server"]
+  API\[DUCO Studio API Proxy]
+  CRON\[Cron Job
+  Every 1 min]
+  WS\[WebSocket Service]
+end
+REDIS -->|Sub live-stream/*| WS
 subgraph Frontend\["DUCO Studio Frontend"]
   PAGE\["Live Data Page
 UI Mounted"]
   ECHARTS\[ECharts Line Charts]
 end
-subgraph Studio\["DUCO Studio Server"]
-  API\[API Proxy]
-  WS\[WebSocket Service]
-  REDIS_Job\[(Redis
-  1 min TTL)]
-  CRON\[Cron Job
-  Every 1 min]
-end
-API -->|Store Access| REDIS_Job
-REDIS_Job -->|Check Active Requests| CRON
-CRON -->|Invoke MetaAPI if Active| METAAPI
-REDIS -->|Sub live-stream/*| WS
-PAGE -->|Heartbeat 1 min| API
-API -->|Forward First Request| METAAPI
-METAAPI -->|Invoke Direct Method| IOT
-IOT -->|Command| M2
-M2 -->|Execution Result| IOT
-IOT -->|Result / Ack| METAAPI
+API -->|Forward First Request| Metaapi
 API -->|Initial Echarts data| ECHARTS
-CH -->|Get 2 min data| API
+API -->|Store Access 1 Min TTL| REDISCron
+REDISCron -->|Check Active Requests| CRON
+CRON -->|Invoke MetaAPI if Active| Metaapi
+Metaapi -->|Invoke Direct Method| IOT
+CHCe -->|Get 2 min data| API
 WS -->|Filtered Live Data| ECHARTS
 ECHARTS -->|Render Charts| PAGE
 PAGE -->|Create WebSocket and Send INIT_FIELD_LIST| WS
+PAGE -->|Heartbeat 1 min| API
+IOT -->|Command| M2
+M2 -->|Execution Result| IOT
+IOT -->|Result / Ack| META
+M2 -->|No Command > 3 min 
+Stop Stream| M2
 
 ::
+
+
+
 
 
 
