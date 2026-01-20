@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     'nuxt-og-image',
     'nuxt-llms',
     '@nuxtjs/mcp-toolkit',
-    'nuxt-studio'
+    'nuxt-studio',
+    '@nuxtjs/i18n'
   ],
 
   devtools: {
@@ -33,7 +34,20 @@ export default defineNuxtConfig({
       }
     }
   },
-
+  i18n: {
+    strategy: 'no_prefix',
+    locales: [
+      { code: 'en', language: 'en-US', file: 'en.yaml', name: 'English' },
+      { code: 'zh', language: 'zh-CN', file: 'zh.yaml', name: '简体中文' },
+      { code: 'sv', language: 'sv-SE', file: 'sv.yaml', name: 'Svenska' }
+    ],
+    defaultLocale: 'en',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: '__client_lang'
+    },
+    vueI18n: 'i18n.config.ts'
+  },
   experimental: {
     asyncContext: true
   },

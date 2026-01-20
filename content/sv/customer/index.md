@@ -1,0 +1,26 @@
+---
+title: Introduction
+description: Welcome to Duco V1 documentation.
+navigation:
+  icon: i-lucide-house
+---
+This is the documentation for Duco V1.
+
+## Quick Start
+
+You can start a fresh new project with:
+
+```bash [Terminal]
+npx nuxi init -t github:nuxt-ui-templates/docs
+```
+
+or create a new repository from GitHub:
+
+1. Open <https://github.com/nuxt-ui-templates/docs>
+2. Click on `Use this template` button
+3. Enter repository name and click on `Create repository from template` button
+4. Clone your new repository
+5. Install dependencies with your favorite package manager
+6. Start development server
+
+That's it! You can now start writing your documentation in the [`content/`](https://content.nuxt.com/usage/content-directory) directory 🚀

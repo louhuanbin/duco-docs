@@ -3,8 +3,9 @@ const route = useRoute()
 
 // 1️⃣ 当前版本（从路由推断，刷新不丢）
 const currentVersion = computed<'customer' | 'tech'>(() => {
-  return route.path.startsWith('/tech') ? 'tech' : 'customer'
+  return route.params.version as 'customer' | 'tech';
 })
+const lang = computed(() => route.params.language as 'en' | 'zh' | 'sv')
 
 // 2️⃣ 下拉菜单项
 const items:any = computed(() => [
@@ -14,7 +15,7 @@ const items:any = computed(() => [
     color: currentVersion.value === 'customer' ? 'primary' : '',
     type: 'checkbox',
     onSelect: () => {
-      navigateTo('/customer')
+      navigateTo(`/${lang.value}/customer`)
     }
 
   },
@@ -24,7 +25,7 @@ const items:any = computed(() => [
     color: currentVersion.value === 'tech' ? 'primary' : '',
     type: 'checkbox',
     onSelect: () => {
-      navigateTo('/tech')
+      navigateTo(`/${lang.value}/tech`)
     }
   }
 ])

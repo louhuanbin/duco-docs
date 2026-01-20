@@ -7,8 +7,8 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { locale } = useI18n()
 const version = route.params.version as string;
+const language = route.params.language as string;
 
 const contentPath = computed(() => {
   const path = route.path.replace(/^\/docs/, '')
@@ -17,7 +17,7 @@ const contentPath = computed(() => {
 const { toc } = useAppConfig()
 const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 
-// const { data: page } = await useAsyncData(route.path, () => queryCollection('docs').path(route.path).first())
+const { data: page } = await useAsyncData(route.path, () => queryCollection('docs').path(route.path).first())
 
 // const asyncKey = computed(() =>
 //   ['docs', version, contentPath.value.replaceAll('/', '_')].join('-')
@@ -30,14 +30,13 @@ const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 //       .path(`/${locale.value}/${route.path}`)
 //       .first()
 // )
-const { data: page } = await useAsyncData(
-  `docs-${locale.value}-${route.path}`,
-  () =>
-    queryCollection('docs')
-      .where('path', 'LIKE', `/${locale.value}${route.path}/%`)
-      .first()
-)
-console.log(page.value, locale.value, route.path, '88888888888888888888888888888888888800');
+// const { data: page } = await useAsyncData(
+//   `docs-${locale.value}-${route.path}`,
+//   () =>
+//     queryCollection('docs')
+//       .where('path', 'LIKE', `/${locale.value}${route.path}/%`)
+//       .first()
+// )
 if (!page.value) {
   throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
 }

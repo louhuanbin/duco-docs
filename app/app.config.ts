@@ -31,6 +31,7 @@ export default defineAppConfig({
     },
     search: true,
     colorMode: true,
+    switchLanguage: true,
     links: [
     //   {
     //   'icon': 'i-simple-icons-github',

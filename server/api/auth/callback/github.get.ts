@@ -48,6 +48,8 @@ export default defineEventHandler(async (event) => {
     maxAge: 60 * 60 * 24 * 7, // 7天
   });
 
+  const lang = await getCookie(event, '__client_lang');
+
   // Step 4: 跳转到你的前端主页
-  return sendRedirect(event, '/tech');
+  return sendRedirect(event, `/${lang}/tech`);
 });

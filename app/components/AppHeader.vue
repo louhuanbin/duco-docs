@@ -1,9 +1,53 @@
 <script setup lang="ts">
 import type { ContentNavigationItem } from '@nuxt/content'
+import type { SelectItem } from '@nuxt/ui'
 
 const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 
 const { header } = useAppConfig()
+const { locale, setLocale } = useI18n()
+const route = useRoute()
+
+
+
+
+const items = ref([
+  {
+    label: 'English',
+    value: 'en',
+    avatar: {
+      src: '/images/gb4x3.png',
+      alt: 'English'
+    }
+  },
+  {
+    label: '简体中文',
+    value: 'zh',
+    avatar: {
+      src: '/images/cn.png',
+      alt: '简体中文'
+    }
+  },
+  {
+    label: 'Svenska',
+    value: 'sv',
+    avatar: {
+      src: '/images/se4x3.png',
+      alt: 'Svenska'
+    }
+  }
+] satisfies SelectItem[])
+
+
+const avatar  = computed(() => items.value.find(item => item.value === locale.value)?.avatar)
+
+const updateValue = (val: string) => {
+  locale.value = val as "en" | "zh" | "sv"; 
+  const path = `/${val}${route.path.replace(/\/(en|zh|sv)/, '')}`;
+  setLocale(val as "en" | "zh" | "sv");
+  navigateTo(path);
+  
+}
 </script>
 
 <template>
@@ -52,6 +96,19 @@ const { header } = useAppConfig()
       />
 
       <UColorModeButton v-if="header?.colorMode" />
+
+      <template
+      v-if="header?.switchLanguage"
+      >
+      <USelect 
+      v-model="locale" 
+      :items="items" 
+      value-key="value"
+       :avatar="avatar"
+        class="w-48"
+        @update:model-value="updateValue"
+        />
+      </template>
 
       <template v-if="header?.links">
         <UButton

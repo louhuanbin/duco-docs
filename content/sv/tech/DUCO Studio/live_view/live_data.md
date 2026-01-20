@@ -247,12 +247,16 @@ end
 subgraph IOTHub\["Azure IoT Hub"]
   IOT\[Azure IoT Hub]
 end
+subgraph Metaapi\["Metaapi Server"]
+  METAAPI\[API Server]
+end
 subgraph ingestion\["Ingestion server"]
   ING\[Get Raw Data From IOT Hub]
-  RL\[Real-time Raw Data]
+  RT\[Real-time Raw Data]
   META\[Validate & Parse Raw Data]
-  RawData\[Get All Raw Data from KAFKA]
+  RawData\[Process Raw Data]
 end
+METAAPI -->|Get Parsed Data Logic| META
 subgraph REDISLayer\["Redis"]
   REDIS\[(Redis
   pub/sub)]
@@ -268,22 +272,19 @@ end
 subgraph Distributor\["Distributor layer"]
   ParsedData\[Get Parsed Data]
 end
-META -->|Store Raw Data| CHRaw
+RawData -->|Store Raw Data| CHRaw
+RT -->|Store Raw Data| CHRaw
 ING -->|Pub All Raw Data | RawKafka
 RawKafka -->|Sub All Raw Data | RawData
-RawData --> META
+RawData <-->| Validate and Parse Raw Data| META
 M2 -->|Pub Raw Data| IOT
 IOT -->|Sub Raw Data| ING
-ING -->|Get Real-time Data| RL
-RL --> META
+ING -->|Get Real-time Data| RT
+RT <--> |Validate and parse Raw Data| META
 ParsedData -->|Store All Parsed Data| CHCe
-META -->|Parsed Real-time Data -> Pub| REDIS
-META -->|All Parsed Data -> Pub| KAFKA
+RT -->|Pub parsed Real time Data| REDIS
+RawData -->|All Parsed Data -> Pub| KAFKA
 KAFKA -->|Sub All Parsed Data| ParsedData
-subgraph Metaapi\["Metaapi Server"]
-  METAAPI\[API Server]
-METAAPI -->|Get Parsed Data Logic| META
-end
 subgraph Studio\["DUCO Studio Server"]
   API\[DUCO Studio API Proxy]
   WS\[WebSocket Service]
