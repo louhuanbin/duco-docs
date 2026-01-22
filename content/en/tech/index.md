@@ -84,7 +84,6 @@ subgraph CH\["ClickHouse"]
 CHCe\[(ce\_technology)]
 CHRaw\[(raw\_data\_cache\_store)]
 end
-RT-->|Write Raw Data to CH| CHRaw
 ProcessRawData-->|Write Raw Data to CH| CHRaw
 ProcessRawData-->|Pub Parsed Data| Kafka
 subgraph Distributor\["Distributor layer"]
@@ -208,7 +207,7 @@ subgraph Frontend\["Frontend Page"]
 Page\[Page]
 end
 subgraph Backend\["Backend Server"]
-BackendAPI\[API Proxy]
+BackendAPI\[API Server]
 WS\[Websocket]
 ProxyGfana\[Proxy Grafana]
 end
@@ -218,10 +217,12 @@ Page --> | Request Dashboard| ProxyGfana
 end
 RTRedis -->|Sub Parsed Real-time Data| WS
 subgraph Grafana\["Grafana Server"]
+gfApi\[Grafana API]
 Dashboard\[Dashboard]
 end
 Dashboard -->| Embbed Dashboard|Page
-ProxyGfana -->|Request GF Server| Grafana
+ProxyGfana -->|Request GF Dashboard| Dashboard
+BackendAPI <-->|Request GF API/Response| gfApi
 subgraph MetaAPI\["MetaApi Server "]
 CMSAPI\[API]
 end
@@ -255,5 +256,5 @@ linkStyle 12 stroke:#00aa00,stroke-width:2px;
 linkStyle 13 stroke:#00aa00,stroke-width:2px;
 DataAPI -.-> |Read Data| BackendAPI
 linkStyle 14 stroke:#00aa00,stroke-width:2px;
-CMSAPI --> |Get Variables Data| Grafana
+CMSAPI --> |Get Variables Data| Dashboard
 ::

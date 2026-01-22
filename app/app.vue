@@ -77,3 +77,8 @@ provide('navigation', navigation)
     </ClientOnly>
   </UApp>
 </template>
+<style lang="css">
+/* nuxt-studio{
+  display: none !important;
+} */
+</style>

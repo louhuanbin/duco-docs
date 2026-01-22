@@ -20,7 +20,7 @@ Create stunning, fast and SEO-optimized documentation sites.
 #links
   :::u-button
   ---
-  to: /customer
+  to: /en/tech
   size: xl
   trailing-icon: i-lucide-arrow-right
   ---

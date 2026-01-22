@@ -53,19 +53,19 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-07-11',
-  studio: {
-    route: '/',
-    repository: {
-      provider: 'github', // 'github' or 'gitlab'
-      owner: 'louhuanbin', // your GitHub/GitLab username or organization
-      repo: 'duco-docs', // your repository name
-      branch: 'main', // the branch to commit to (default: main)
-    },
-    i18n: {
-      defaultLocale: 'en' // 'en', 'fr' or 'de'
-    },
-    dev: true
-  },
+  // studio: {
+  //   route: '/',
+  //   repository: {
+  //     provider: 'github', // 'github' or 'gitlab'
+  //     owner: 'louhuanbin', // your GitHub/GitLab username or organization
+  //     repo: 'duco-docs', // your repository name
+  //     branch: 'main', // the branch to commit to (default: main)
+  //   },
+  //   i18n: {
+  //     defaultLocale: 'en' // 'en', 'cn' or 'de'
+  //   },
+  //   dev: true
+  // },
   nitro: {
     prerender: {
       routes: [
