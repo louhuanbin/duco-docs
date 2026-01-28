@@ -1,26 +1,82 @@
 ---
 title: Introduction
-description: Welcome to Duco V1 documentation.
+description: Welcome to Duco Portal documentation.
 navigation:
   icon: i-lucide-house
 ---
 This is the documentation for Duco V1.
 
-## Quick Start
+## OverView
 
-You can start a fresh new project with:
+::card-group
+  :::card
+  ---
+  icon: i-mdi:hexagon-multiple
+  target: _self
+  title: Live View
+  to: /en/customer/live-view/
+  ---
+  Machine List, Postion In Map, Base Info, Machine Info, Tag Info, ECUMap, Alarms about DTC,  Machine Position Trace in Map, Mirror DashBoard Info, Battery Info, SOC, SOH,  Real-time Data show in Echart line
+  :::
 
-```bash [Terminal]
-npx nuxi init -t github:nuxt-ui-templates/docs
-```
+  :::card
+  ---
+  icon: i-fluent:textbox-align-bottom-left-16-regular
+  target: _self
+  title: Explore
+  to: /en/customer/explore
+  ---
+  Raw Machine Data, Runtime Data, Customized Analytics, Real Time.
+  :::
 
-or create a new repository from GitHub:
+  :::card
+  ---
+  icon: i-lucide:badge-alert
+  target: _self
+  title: Alerts
+  to: /v1/live-view/alertrecord
+  ---
+  Alarms about DTC
+  :::
 
-1. Open <https://github.com/nuxt-ui-templates/docs>
-2. Click on `Use this template` button
-3. Enter repository name and click on `Create repository from template` button
-4. Clone your new repository
-5. Install dependencies with your favorite package manager
-6. Start development server
+  :::card
+  ---
+  icon: i-mdi:go-kart-track
+  target: _self
+  title: Trace
+  to: /v1/live-view/trace
+  ---
+  Machine Position Trace in Map
+  :::
 
-That's it! You can now start writing your documentation in the [`content/`](https://content.nuxt.com/usage/content-directory) directory 🚀
+  :::card
+  ---
+  icon: i-fluent:gauge-24-regular
+  target: _self
+  title: Dashboard
+  to: /v1/live-view/mirrordashboard
+  ---
+  Mirror DashBoard Info
+  :::
+
+  :::card
+  ---
+  icon: i-lucide:battery
+  target: _self
+  title: Battery
+  to: /v1/live-view/battery
+  ---
+  Battery Info, SOC, SOH
+  :::
+
+  :::card
+  ---
+  icon: i-fluent:pulse-24-filled
+  target: _self
+  title: Live Data
+  to: /v1/live-view/livedata
+  ---
+  Real-time Data show in Echart line
+  :::
+::
+
